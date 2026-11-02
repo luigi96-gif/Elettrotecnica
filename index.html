@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ElettroLab">
+  <title>Elettrotecnica - Modulo 1</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-dark: #0284c7;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+      line-height: 1.5;
+    }
+    header {
+      padding: 16px 20px;
+      background: rgba(30, 41, 59, 0.9);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+    .progress-badge {
+      background: #334155;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    main { padding: 16px; max-width: 600px; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Cards Lezioni */
+    .step-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      border: 1px solid #334155;
+      transition: border-color 0.2s;
+    }
+    .step-card.completed { border-color: var(--success); }
+    .step-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .step-title { margin: 0 0 10px 0; font-size: 1.1rem; }
+    .analogy-box {
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 3px solid var(--warning);
+      padding: 10px 12px;
+      border-radius: 0 8px 8px 0;
+      margin: 12px 0;
+      font-size: 0.92rem;
+    }
+    .lifesaver-box {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 3px solid var(--success);
+      padding: 10px 12px;
+      border-radius: 0 8px 8px 0;
+      margin: 12px 0;
+      font-size: 0.9rem;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-check { background: #334155; color: var(--text); }
+    .btn-check.done { background: var(--success); color: #052e16; }
+
+    /* Flashcards */
+    .flashcard-container { perspective: 1000px; margin: 20px 0; }
+    .flashcard {
+      background: var(--card);
+      border: 2px solid var(--accent);
+      border-radius: 20px;
+      min-height: 240px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+    .flashcard-hint {
+      position: absolute;
+      bottom: 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .flashcard-controls { display: flex; gap: 12px; }
+    .btn-secondary { background: #334155; color: var(--text); }
+    .btn-primary { background: var(--accent); color: #0f172a; }
+
+    /* Quiz */
+    .quiz-option {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: var(--text);
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      width: 100%;
+      text-align: left;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .quiz-option.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--success); }
+    .quiz-option.wrong { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); }
+    .feedback-box {
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    /* Bottom Nav */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 20;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .nav-btn.active { color: var(--accent); font-weight: 600; }
+    .nav-icon { font-size: 1.3rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ Elettrotecnica M1</h1>
+  <div class="progress-badge" id="progressText">0/8 Passi</div>
+</header>
+
+<main>
+  <!-- SEZIONE 1: LEZIONI PASSO PASSO -->
+  <section id="tab-lessons" class="tab-content active">
+    <p style="color: var(--muted); font-size: 0.9rem; margin-top: 0;">
+      Leggi un mattoncino alla volta. Quando ti è chiaro, tocca "Segna come capito".
+    </p>
+    <div id="stepsList"></div>
+  </section>
+
+  <!-- SEZIONE 2: FLASHCARDS -->
+  <section id="tab-cards" class="tab-content">
+    <p style="color: var(--muted); font-size: 0.9rem; margin-top: 0;">
+      Tocca la carta per girarla. Prova a rispondere a mente prima di girarla!
+    </p>
+    <div id="cardCounter" style="text-align:center; font-weight:600; color:var(--accent);"></div>
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div id="cardText" style="font-size: 1.15rem; font-weight: 600;"></div>
+        <div class="flashcard-hint" id="cardHint">Tocca per vedere la risposta 🔄</div>
+      </div>
+    </div>
+    <div class="flashcard-controls">
+      <button class="btn btn-secondary" onclick="prevCard()">⬅️ Precedente</button>
+      <button class="btn btn-primary" onclick="nextCard()">Prossima ➡️</button>
+    </div>
+  </section>
+
+  <!-- SEZIONE 3: QUIZ BOSS -->
+  <section id="tab-quiz" class="tab-content">
+    <div class="step-card">
+      <span class="step-tag" id="quizTag">Domanda 1</span>
+      <h3 class="step-title" id="quizQuestion"></h3>
+      <div id="quizOptions"></div>
+      <div class="feedback-box" id="quizFeedback"></div>
+      <button class="btn btn-primary" id="nextQuizBtn" style="display:none;" onclick="nextQuestion()">Prossima Domanda ➡️</button>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="nav-btn active" onclick="switchTab('lessons', this)">
+    <span class="nav-icon">📖</span>
+    <span>Passi</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('cards', this)">
+    <span class="nav-icon">🃏</span>
+    <span>Salvavita</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('quiz', this)">
+    <span class="nav-icon">🏆</span>
+    <span>Quiz M1</span>
+  </button>
+</nav>
+
+<script>
+  const steps = [
+    {
+      tag: "Lezione 1 • Introduzione",
+      title: "1. Energia vs Informazione e Parametri Concentrati",
+      body: "I sistemi elettrici servono a due scopi: trasportare <b>Energia</b> (motori, stufe, luci) o trasportare <b>Informazioni/Segnali</b> (radio, Wi-Fi).<br><br>Poiché l'elettricità viaggia quasi alla velocità della luce, nei circuiti normali fingiamo che si sposti <b>istantaneamente</b> (tempo di propagazione = 0). Questi circuiti si chiamano <b>a parametri concentrati</b>.",
+      analogy: "💡 <b>Paragone:</b> Quando premi l'interruttore in camera, la luce si accende subito: non aspetti che la corrente 'arrivi' lungo il muro.",
+      lifesaver: "📌 <b>Salvavita:</b> Circuito a parametri concentrati = tempi di propagazione trascurabili rispetto alle variazioni delle grandezze."
+    },
+    {
+      tag: "Lezione 2 • Misure",
+      title: "2. Precisione vs Accuratezza",
+      body: "Ogni misura reale ha sempre un piccolo errore.<br>• <b>Precisione:</b> quanto è piccola l'incertezza dello strumento (se misuro 10 volte ottengo valori tutti vicinissimi tra loro).<br>• <b>Accuratezza:</b> quanto la misura si avvicina al valore <b>vero</b>.<br><br>⚠️ <i>Attenzione (frase d'esame!):</i> Posso avere misure molto precise ma poco accurate (es. uno strumento starato), ma NON posso avere misure poco precise e molto accurate!",
+      analogy: "🎯 <b>Paragone:</b> Tirare 5 frecce tutte nello stesso punto ma fuori dal bersaglio = Molto Preciso, Poco Accurato.",
+      lifesaver: "📌 <b>Salvavita:</b> Precisione = bontà dello strumento (incertezza). Accuratezza = vicinanza al valore vero."
+    },
+    {
+      tag: "Lezione 2 • Sistema Internazionale",
+      title: "3. Le 7 Unità Fondamentali e i Prefissi",
+      body: "Il Sistema Internazionale (SI) ha <b>7 unità fondamentali</b>: metro (m), secondo (s), chilogrammo (kg), <b>Ampere (A)</b> per la corrente, Kelvin (K), mole (mol) e candela (cd). Tutte le altre (Volt, Ohm, Watt) sono <i>derivate</i>.<br><br>I prefissi più usati cambiano di 1000 in 1000 (10³):<br>• <b>k (chilo)</b> = 1.000 (10³)<br>• <b>M (mega)</b> = 1.000.000 (10⁶)<br>• <b>m (milli)</b> = 0,001 (10⁻³)<br>• <b>μ (micro)</b> = 10⁻⁶",
+      analogy: "📏 <b>Trucco:</b> Se il simbolo dell'unità viene dal cognome di uno scienziato (Volta -> V, Ampere -> A, Ohm -> Ω) si scrive MAIUSCOLO. Altrimenti minuscolo (metro -> m, secondo -> s).",
+      lifesaver: "📌 <b>Salvavita:</b> 7 unità SI fondamentali (tra cui l'Ampere). Da chilo (10³) a milli (10⁻³) ci si sposta a salti di 3 zeri."
+    },
+    {
+      tag: "Lezione 2 • Strumenti",
+      title: "4. Amperometro, Voltmetro e Parametri",
+      body: "• <b>Amperometro (misura la Corrente):</b> si collega <b>IN SERIE</b> (bisogna tagliare il filo per farci passare tutta la corrente dentro). Deve avere resistenza interna <b>piccolissima</b> (quasi zero) per non frenare la corrente.<br>• <b>Voltmetro (misura la Tensione):</b> si collega <b>IN PARALLELO</b> (appoggiando le due sonde ai due capi del componente). Deve avere resistenza interna <b>grandissima</b>.<br><br>I 3 parametri base di uno strumento sono: <b>Portata</b> (massimo misurabile), <b>Risoluzione</b> (minimo passo leggibile) e <b>Classe di precisione</b>.",
+      analogy: "🚿 <b>Paragone:</b> Per contare quanta acqua passa (Amperometro) devi mettere un contatore DENTRO il tubo (in serie). Per misurare la differenza di pressione tra due punti (Voltmetro) ti basta collegarti ai due lati (in parallelo).",
+      lifesaver: "📌 <b>Salvavita:</b> Amperometro = in SERIE (R interna ~ 0). Voltmetro = in PARALLELO (R interna grandissima)."
+    },
+    {
+      tag: "Lezione 3 • Basi Fisiche",
+      title: "5. Carica Elettrica, Legge di Coulomb e Materiali",
+      body: "L'atomo ha protoni (+) nel nucleo ed <b>elettroni (-)</b> che gli girano attorno. La <b>Carica elettrica (Q)</b> si misura in <b>Coulomb (C)</b>. La carica non si crea né si distrugge (Legge di conservazione).<br><br>• <b>Legge di Coulomb:</b> Cariche uguali si respingono, opposte si attraggono. La forza cresce col prodotto delle cariche e diminuisce col quadrato della distanza: <b>F = k · (q₁·q₂) / r²</b>.<br>• <b>Conduttori</b> (es. metalli): gli elettroni sono liberi di muoversi.<br>• <b>Isolanti</b> (es. plastica, vetro): le cariche sono bloccate.",
+      analogy: "🧲 <b>Paragone:</b> I conduttori sono autostrade libere per gli elettroni; gli isolanti sono parcheggi con le sbarre chiuse.",
+      lifesaver: "📌 <b>Salvavita:</b> Carica in Coulomb (C). Conduttore = cariche libere (all'equilibrio il campo elettrico interno è zero!)."
+    },
+    {
+      tag: "Lezione 3 • Corrente",
+      title: "6. La Corrente Elettrica (Ampere)",
+      body: "La <b>Corrente elettrica (I)</b> è la quantità di carica che attraversa la sezione di un filo in un secondo: <b>I = ΔQ / Δt</b> (oppure <i>i = dq/dt</i>). Si misura in <b>Ampere (A)</b> (1 A = 1 Coulomb al secondo).<br><br>⚠️ <b>Convenzione del verso:</b> Nei metalli si muovono gli elettroni (negativi), ma per convenzione storica fingiamo che la corrente sia il movimento delle <b>cariche positive</b> (dal polo + al polo -).<br>• <b>Continua (DC):</b> costante nel tempo.<br>• <b>Alternata (AC):</b> oscilla come un'onda (sinusoide).",
+      analogy: "🌊 <b>Paragone:</b> La carica (Coulomb) sono i litri d'acqua; la corrente (Ampere) sono i litri al secondo che escono dal rubinetto.",
+      lifesaver: "📌 <b>Salvavita:</b> I = Q / t [Ampere = Coulomb / secondo]. Per convenzione scorre dal + al - (opposta agli elettroni)."
+    },
+    {
+      tag: "Lezione 3 • Tensione",
+      title: "7. Campo Elettrico, Potenziale e Tensione (Volt)",
+      body: "• <b>Campo Elettrico (E):</b> è la forza elettrica che sente una carica divisa per la carica stessa (<b>E = F / q</b>, si misura in V/m o N/C).<br>• <b>Tensione o Differenza di Potenziale (V):</b> è il <b>lavoro (energia)</b> necessario per spostare una carica da un punto A a un punto B: <b>V = Lavoro / Carica = W / Q</b>.<br>Si misura in <b>Volt (V)</b> (1 Volt = 1 Joule / 1 Coulomb).",
+      analogy: "🎿 <b>Paragone dello sciatore (dalle tue slide!):</b> La batteria (forza elettromotrice) è come lo skilift che fa fatica (lavoro) per portare gli sciatori (le cariche) in cima alla montagna (alto potenziale), così poi possono scendere lungo la pista (il circuito).",
+      lifesaver: "📌 <b>Salvavita:</b> Tensione V = Lavoro / Carica [Volt = Joule / Coulomb]. È la 'spinta' che muove le cariche."
+    },
+    {
+      tag: "Lezione 3 • Potenza e Convenzioni",
+      title: "8. Potenza (Watt), Energia e Convenzioni di Segno",
+      body: "• <b>Energia (W):</b> il lavoro totale, si misura in <b>Joule (J)</b> o in <b>Wattora (Wh)</b> (1 Wh = 3600 J).<br>• <b>Potenza (P):</b> la velocità con cui si consuma o produce energia. In elettrotecnica è semplicissima: <b>P = V · I</b> (Tensione × Corrente) e si misura in <b>Watt (W)</b>.<br><br>🔑 <b>Convenzione dell'Utilizzatore (es. lampadina, resistore):</b> la freccia della corrente <b>ENTRA nel polo +</b> della tensione. Se P = V·I > 0, il componente <b>assorbe</b> potenza.<br>🔑 <b>Convenzione del Generatore (es. batteria):</b> la corrente <b>ESCE dal polo +</b>. Se P = V·I > 0, il componente <b>eroga (genera)</b> potenza.",
+      analogy: "💡 <b>Regola d'oro per gli esercizi:</b> Guarda la freccia della corrente I: se entra nel '+' usi la convenzione dell'utilizzatore (chi consuma). Se esce dal '+' usi quella del generatore (chi produce).",
+      lifesaver: "📌 <b>Salvavita:</b> P = V · I [Watt]. Utilizzatore: I entra nel +. Generatore: I esce dal +. La somma delle potenze in un circuito è zero."
+    }
+  ];
+
+  const flashcards = [
+    { q: "Cosa significa 'Circuito a parametri concentrati'?", a: "Un circuito in cui il tempo di propagazione dei segnali è considerato nullo (istantaneo) rispetto alle variazioni delle grandezze." },
+    { q: "Qual è la differenza tra Precisione e Accuratezza?", a: "Precisione = quanto è piccola l'incertezza dello strumento.\nAccuratezza = quanto la misura è vicina al valore VERO." },
+    { q: "Come si collegano Amperometro e Voltmetro nel circuito?", a: "Amperometro (corrente) -> IN SERIE (R interna ~ 0).\nVoltmetro (tensione) -> IN PARALLELO (R interna altissima)." },
+    { q: "Cosa sono Portata e Risoluzione di uno strumento?", a: "Portata = il valore MASSIMO che può misurare senza rompersi.\nRisoluzione = la più PICCOLA variazione che riesce a leggere." },
+    { q: "Qual è la definizione e la formula della Corrente Elettrica?", a: "È la carica che attraversa una sezione nell'unità di tempo:\nI = ΔQ / Δt (oppure dq/dt).\nSi misura in Ampere (1 A = 1 C / 1 s)." },
+    { q: "In che verso scorre la corrente elettrica per convenzione?", a: "Dal polo POSITIVO (+) al polo NEGATIVO (-), cioè nel verso delle cariche positive (opposto al moto reale degli elettroni)." },
+    { q: "Cos'è la Tensione (o differenza di potenziale) e come si calcola?", a: "È il lavoro necessario per spostare una carica unitaria da A a B:\nV = W / Q (Joule / Coulomb).\nSi misura in Volt (V)." },
+    { q: "Qual è la formula elettrica della Potenza e quando vale la Convenzione dell'Utilizzatore?", a: "P = V · I (misurata in Watt).\nConvenzione dell'Utilizzatore: quando la corrente ENTRA nel terminale POSITIVO (+) della tensione (P > 0 significa potenza assorbita)." }
+  ];
+
+  const quizData = [
+    {
+      q: "1. Una torcia elettrica (batteria + lampadina) e un impianto radio satellitare: quale differenza funzionale hanno?",
+      opts: [
+        "La torcia trasmette segnali, il satellite trasporta energia",
+        "La torcia serve a produrre/utilizzare energia (sistema a parametri concentrati), il satellite a trasmettere informazioni",
+        "Sono entrambi circuiti a teoria dei campi"
+      ],
+      ans: 1,
+      exp: "Esatto! La torcia converte energia elettrica in luce ed è piccolissima (parametri concentrati), mentre il satellite trasmette segnali/informazioni a grande distanza."
+    },
+    {
+      q: "2. Quale di queste affermazioni su Precisione e Accuratezza è VERA secondo le slide?",
+      opts: [
+        "Posso avere misure molto precise ma poco accurate",
+        "Posso avere misure poco precise ma molto accurate",
+        "Precisione e accuratezza sono sinonimi"
+      ],
+      ans: 0,
+      exp: "Perfetto! Uno strumento molto sofisticato ma starato dà misure tutte uguali (molto precise) ma lontane dal valore vero (poco accurate)."
+    },
+    {
+      q: "3. Vuoi misurare la corrente che scorre in una lampadina e la tensione ai suoi capi. Come colleghi gli strumenti?",
+      opts: [
+        "Amperometro in parallelo e Voltmetro in serie",
+        "Entrambi in serie",
+        "Amperometro in serie e Voltmetro in parallelo"
+      ],
+      ans: 2,
+      exp: "Centro! La corrente deve attraversare l'amperometro (in serie), mentre il voltmetro legge la differenza tra due punti (in parallelo)."
+    },
+    {
+      q: "4. Come devono essere le resistenze interne ideali di un Amperometro e di un Voltmetro?",
+      opts: [
+        "Piccolissima per l'Amperometro, grandissima per il Voltmetro",
+        "Grandissima per l'Amperometro, piccolissima per il Voltmetro",
+        "Entrambe pari a zero"
+      ],
+      ans: 0,
+      exp: "Giustissimo: l'amperometro in serie non deve ostacolare la corrente (R ~ 0), il voltmetro in parallelo non deve rubare corrente al circuito (R grandissima)."
+    },
+    {
+      q: "5. Se in un filo conduttore passano 20 Coulomb di carica in 10 secondi, quanto vale la corrente I?",
+      opts: [
+        "200 A",
+        "2 A",
+        "0,5 A"
+      ],
+      ans: 1,
+      exp: "Esatto! I = Q / t = 20 Coulomb / 10 secondi = 2 Ampere."
+    },
+    {
+      q: "6. Per spostare una carica di 2 Coulomb tra due punti A e B compio un lavoro di 24 Joule. Quanto vale la tensione V_AB?",
+      opts: [
+        "12 Volt",
+        "48 Volt",
+        "22 Volt"
+      ],
+      ans: 0,
+      exp: "Bravo! V = Lavoro / Carica = 24 J / 2 C = 12 Volt."
+    },
+    {
+      q: "7. In un elemento circuitale la corrente di 3 A ENTRA nel terminale col segno (+) della tensione (che vale 4 V). Che convenzione stiamo usando e quanto vale la potenza?",
+      opts: [
+        "Convenzione del generatore; eroga 12 W",
+        "Convenzione dell'utilizzatore; assorbe 12 W",
+        "Convenzione dell'utilizzatore; assorbe 7 W"
+      ],
+      ans: 1,
+      exp: "Impeccabile! La corrente entra nel polo +, quindi è la convenzione dell'utilizzatore. P = V · I = 4 V × 3 A = +12 W (potenza assorbita)."
+    }
+  ];
+
+  // Stato salvato in localStorage
+  let completedSteps = JSON.parse(localStorage.getItem('elettro_m1_steps') || '[]');
+  let currentCard = 0;
+  let isFlipped = false;
+  let currentQuiz = 0;
+
+  function renderSteps() {
+    const container = document.getElementById('stepsList');
+    container.innerHTML = '';
+    steps.forEach((s, idx) => {
+      const isDone = completedSteps.includes(idx);
+      const card = document.createElement('div');
+      card.className = 'step-card ' + (isDone ? 'completed' : '');
+      card.innerHTML = `
+        <span class="step-tag">${s.tag}</span>
+        <h3 class="step-title">${s.title}</h3>
+        <div>${s.body}</div>
+        <div class="analogy-box">${s.analogy}</div>
+        <div class="lifesaver-box">${s.lifesaver}</div>
+        <button class="btn btn-check ${isDone ? 'done' : ''}" onclick="toggleStep(${idx})">
+          ${isDone ? '✅ Capito e registrato!' : 'Segna come capito'}
+        </button>
+      `;
+      container.appendChild(card);
+    });
+    document.getElementById('progressText').innerText = `${completedSteps.length}/${steps.length} Passi`;
+  }
+
+  function toggleStep(idx) {
+    if (completedSteps.includes(idx)) {
+      completedSteps = completedSteps.filter(i => i !== idx);
+    } else {
+      completedSteps.push(idx);
+    }
+    localStorage.setItem('elettro_m1_steps', JSON.stringify(completedSteps));
+    renderSteps();
+  }
+
+  function renderCard() {
+    const card = flashcards[currentCard];
+    document.getElementById('cardCounter').innerText = `Carta ${currentCard + 1} di ${flashcards.length}`;
+    document.getElementById('cardText').innerText = isFlipped ? card.a : card.q;
+    document.getElementById('cardHint').innerText = isFlipped ? "Risposta 📌 (tocca per la domanda)" : "Domanda ❓ (tocca per girare)";
+    document.getElementById('flashcard').style.borderColor = isFlipped ? 'var(--success)' : 'var(--accent)';
+  }
+
+  function flipCard() {
+    isFlipped = !isFlipped;
+    renderCard();
+  }
+  function nextCard() {
+    isFlipped = false;
+    currentCard = (currentCard + 1) % flashcards.length;
+    renderCard();
+  }
+  function prevCard() {
+    isFlipped = false;
+    currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+    renderCard();
+  }
+
+  function renderQuiz() {
+    const q = quizData[currentQuiz];
+    document.getElementById('quizTag').innerText = `Domanda ${currentQuiz + 1} di ${quizData.length}`;
+    document.getElementById('quizQuestion').innerText = q.q;
+    const optsDiv = document.getElementById('quizOptions');
+    optsDiv.innerHTML = '';
+    document.getElementById('quizFeedback').style.display = 'none';
+    document.getElementById('nextQuizBtn').style.display = 'none';
+
+    q.opts.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-option';
+      btn.innerText = opt;
+      btn.onclick = () => checkAnswer(idx, btn);
+      optsDiv.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(idx, btn) {
+    const q = quizData[currentQuiz];
+    const allBtns = document.querySelectorAll('.quiz-option');
+    allBtns.forEach(b => b.disabled = true);
+
+    const fb = document.getElementById('quizFeedback');
+    fb.style.display = 'block';
+
+    if (idx === q.ans) {
+      btn.classList.add('correct');
+      fb.style.background = 'rgba(34, 197, 94, 0.15)';
+      fb.style.color = '#86efac';
+      fb.innerText = '✅ ' + q.exp;
+    } else {
+      btn.classList.add('wrong');
+      allBtns[q.ans].classList.add('correct');
+      fb.style.background = 'rgba(239, 68, 68, 0.15)';
+      fb.style.color = '#fca5a5';
+      fb.innerText = '❌ Attenzione: ' + q.exp;
+    }
+    document.getElementById('nextQuizBtn').style.display = 'block';
+  }
+
+  function nextQuestion() {
+    currentQuiz = (currentQuiz + 1) % quizData.length;
+    renderQuiz();
+  }
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  renderSteps();
+  renderCard();
+  renderQuiz();
+</script>
+</body>
+</html>
